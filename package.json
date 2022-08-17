@@ -1,0 +1,33 @@
+{
+	"name": "ss-marketplacetf-api",
+	"version": "0.1.0",
+	"description": "A Marketplace.TF api wrapper used and maintained by SteamSecurity.org",
+	"main": "index.js",
+	"scripts": {
+		"test": "node test.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://gitlab.com/steamsecurity/ss-marketplacetf-api.git"
+	},
+	"keywords": [
+		"steam",
+		"marketplace",
+		"nodejs",
+		"npm",
+		"reputation",
+		"bans"
+	],
+	"author": "SteamSecurity.org",
+	"license": "GPL-3.0",
+	"bugs": {
+		"url": "https://gitlab.com/steamsecurity/ss-marketplacetf-api/issues"
+	},
+	"homepage": "https://gitlab.com/steamsecurity/ss-marketplacetf-api#readme",
+	"dependencies": {
+		"axios": "^0.27.2"
+	},
+	"devDependencies": {
+		"dotenv": "^16.0.1"
+	}
+}
