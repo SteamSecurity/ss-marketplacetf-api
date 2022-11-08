@@ -31,11 +31,9 @@ class MarketplaceTFAPI {
 			this._debugLog({ data: 'Checking response for errors' });
 			if (!marketplacetf_response.response.success) return reject(this._newResponseError(raw.response.error, '1'));
 
+			// TODO: Error checks here
 			// Format the response
 			this._debugLog({ data: 'Formatting the response' });
-			// console.log(marketplacetf_response);
-			// const json_formatted = JSON.parse(marketplacetf_response) || {};
-			// if (json_formatted === {}) return reject(this._newResponseError('Failed to parse MarketplaceTF response.', '1'));
 			let profile_reputation = { banned: null, seller: null };
 			marketplacetf_response.response.results[0]?.banned ? (profile_reputation.banned = true) : (profile_reputation.banned = false);
 			marketplacetf_response.response.results[0]?.seller ? (profile_reputation.seller = true) : (profile_reputation.seller = false);
