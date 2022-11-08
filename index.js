@@ -1,114 +1,107 @@
 const axios = require('axios').default;
 
-let MarketplaceTFAPI = {
-	key: null,
-	debug: false,
-	cache_results: true,
-	cache_time: 1800000,
-	timeout: 5000,
-	cache: {},
-};
-// --- Marketplace Functions -------------------------------
-MarketplaceTFAPI.getProfile = (steamid64) => {
-	return new Promise((resolve) => {
-		if (!MarketplaceTFAPI.key) throw new Error('You do not have a Marketplace.TF API key set. See the documentation for more details.');
+let cache = {};
 
-		checkCache()
-			.then(() => _get(`https://marketplace.tf/api/Bans/GetUserBan/v2?key=${MarketplaceTFAPI.key}&steamid=${steamid64}`, steamid64))
-			.then(errorCheck)
-			.then(format)
-			.then(cache)
-			.then(presentToUser)
-			.catch(presentToUser);
+class MarketplaceTFAPI {
+	constructor({ timeout = 5000, cache_time = 1800000, cache_results = true, key = null, debug = false } = {}) {
+		if (!key) throw new Error('A Marketplace.TF API key must be supplied to use ss-marketplacetf-api');
 
-		function checkCache() {
-			return new Promise((resolve, reject) => {
-				_debuglog('Checking cache');
-				if (MarketplaceTFAPI.cache[steamid64]) {
-					_debuglog(`${steamid64} was in cache`, 'Cache');
-					reject(MarketplaceTFAPI.cache[steamid64]);
-				} else resolve(1);
-			});
-		}
+		this.timeout = timeout;
+		this.cache_time = cache_time;
+		this.cache_results = cache_results;
+		this.key = key;
+		this.debug = debug;
+	}
 
-		// Check for basic errors from the marketplacetf raw request
-		function errorCheck(raw) {
-			return new Promise((resolve, reject) => {
-				_debuglog('Checking for errors');
-				// Did the response resolve valid?
-				if (!raw.response.success) return reject(_newResponseError(raw.response.error, '0'));
+	getProfile(steamid64) {
+		return new Promise(async (resolve, reject) => {
+			// Check for the saved user data in the cache
+			this._debugLog({ data: 'Checking for user in cache' });
+			if (cache[steamid64]) {
+				this._debugLog({ data: `${steamid64} was in cache`, title: 'Cache' });
+				return resolve(cache[steamid64]);
+			}
 
-				// Note: When Marketplace.TF does not have a profile on a user, the 'results' will be blank.
-				// This is an expected result, and it should be treated as a non-banned value, and a non-seller value. We will set that in the next step "format".
+			// User was not in the cache. Request information.
+			const marketplacetf_response = await this._get(`https://marketplace.tf/api/Bans/GetUserBan/v2?key=${this.key}&steamid=${steamid64}`, steamid64);
 
-				return resolve(raw.response);
-			});
-		}
+			// Check the response for basic errors
+			// NOTE: When Marketplace.TF does not have a profile on a user, the 'results' will be blank.
+			// This is an expected result, and it should be treated as a non-banned value, and a non-seller value. We will set that in the next step "format".
+			this._debugLog({ data: 'Checking response for errors' });
+			if (!marketplacetf_response.response.success) return reject(this._newResponseError(raw.response.error, '1'));
 
-		function format(json) {
-			return new Promise((resolve) => {
-				_debuglog('Formatting');
-				let profile_reputation = { banned: null, seller: null };
+			// Format the response
+			this._debugLog({ data: 'Formatting the response' });
+			// console.log(marketplacetf_response);
+			// const json_formatted = JSON.parse(marketplacetf_response) || {};
+			// if (json_formatted === {}) return reject(this._newResponseError('Failed to parse MarketplaceTF response.', '1'));
+			let profile_reputation = { banned: null, seller: null };
+			marketplacetf_response.response.results[0]?.banned ? (profile_reputation.banned = true) : (profile_reputation.banned = false);
+			marketplacetf_response.response.results[0]?.seller ? (profile_reputation.seller = true) : (profile_reputation.seller = false);
+			if (this.debug) profile_reputation.steamid64 = steamid64; // Stick the SteamID64 with the response when in debug mode
 
-				json.results[0]?.banned ? (profile_reputation.banned = true) : (profile_reputation.banned = false);
-				json.results[0]?.seller ? (profile_reputation.seller = true) : (profile_reputation.seller = false);
+			// Cache the response
+			if (this.cache_results) {
+				this._debugLog({ data: 'Caching the results' });
+				cache[steamid64] = profile_reputation;
 
-				// Stick the SteamID64 with the response when in debug mode
-				if (MarketplaceTFAPI.debug) profile_reputation.steamid64 = steamid64;
-
-				resolve(profile_reputation);
-			});
-		}
-
-		function cache(data) {
-			return new Promise((resolve) => {
-				_debuglog('Adding to cache');
-
-				MarketplaceTFAPI.cache[steamid64] = data;
-
+				// Delete the saved data after the set time
 				setTimeout(() => {
-					delete MarketplaceTFAPI.cache[steamid64];
-				}, MarketplaceTFAPI.cache_time);
+					delete cache[steamid64];
+				}, this.cache_time);
+			}
 
-				resolve(data);
-			});
+			// Finished!
+			resolve(profile_reputation);
+		});
+	}
+
+	/**
+	 * Our fun little debug logger function. Be nice to him! :3c
+	 * @param {Object} [options]
+	 * @param {String} [options.data] A message to send to the terminal.
+	 * @param {String} [options.title] A header for the output. Disables 'type'.
+	 * @param {String} [options.type=debug] The type of log to send.
+	 * @returns
+	 */
+	_debugLog({ data, title, type = 'debg' } = {}) {
+		if (!this.debug) return;
+
+		if (title) {
+			console.log(`-- ${title} -------------------------------------`);
+			console.log(data);
+			console.log(`\n\n`);
+		} else {
+			try {
+				log[type](data);
+			} catch {
+				console.log(data);
+			}
 		}
+	}
+	// --- Helper Functions ------------------------------------
+	_get(url, steamid64) {
+		return new Promise((resolve) => {
+			this._debugLog({ data: `${steamid64} Making HTTP request` });
+			axios
+				.get(url, { timeout: this.timeout })
+				.then((response) => {
+					let status = response.status;
+					let res = response.data;
+					resolve({ status: status, response: res });
+				})
+				.catch((reason) => {
+					resolve({ error: reason.response.status, error_message: reason.message });
+				});
+		});
+	}
 
-		function presentToUser(data) {
-			_debuglog('Resolve');
-			resolve(data);
-		}
-	});
-};
-
-// --- Helper Functions ------------------------------------
-function _get(url, steamid64) {
-	return new Promise((resolve) => {
-		_debuglog(`${steamid64} Making HTTP request`);
-		axios
-			.get(url, { timeout: this.timeout })
-			.then((response) => {
-				let status = response.status;
-				let res = response.data;
-				resolve({ status: status, response: res });
-			})
-			.catch((reason) => {
-				resolve({ error: reason.response.status, error_message: reason.message });
-			});
-	});
+	_newResponseError(message, error = '1') {
+		return {
+			error: error,
+			error_message: message,
+		};
+	}
 }
-
-function _newResponseError(message, error = 0) {
-	return {
-		error: error,
-		error_message: message,
-	};
-}
-
-// Our fun little debug logger function. Be nice to him! :3c
-function _debuglog(data, title) {
-	if (!MarketplaceTFAPI.debug) return;
-	console.log(data);
-}
-
 module.exports = MarketplaceTFAPI;
