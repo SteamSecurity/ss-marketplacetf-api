@@ -23,28 +23,20 @@ Please see [Limitations](#limitations) for further details.
 # Basic usage
 
 ```js
-// Assign module to a constant variable
-const marketplacetf = require('ss-marketplacetf-api');
+// There are two ways to include this module in your project
+// The first way is on a single line
+const MarketplaceTF = new (require('ss-marketplacetf-api'))({ key: MARKETPLACETF_API_KEY });
 
-// Set MarketplaceTF Key
-marketplacetf.key = MARKETPLACETF_API_KEY;
-
-// Optionally set other variables
-marketplacetf.debug = false; // Set to 'true' to enable debugging
-marketplacetf.cache_results = true; // Set to 'false' to disable caching
-marketplacetf.cache_time = 1800000; // Set to any amount of milliseconds to store cached responses
-marketplacetf.timeout = 5000; // Set to any amount of milliseconds to wait for a response
-
-// Send a request to marketplacetf to get the profile of a user by SteamID64
-// Then log that to the console using console.log
-marketplacetf.getProfile('STEAMID64').then(console.log);
+// Alternatively you can do it like this.
+const _marketplacetf = require('ss-marketplacetf-api');
+const MarketplaceTF = new _marketplacetf({ key: MARKETPLACETF_API_KEY });
 ```
 
-See test_local.js for more examples.
+See test.js for more examples.
 
-# Properties
+# Options
 
-- ### key
+- ### key (Required)
 
   Set this value to your MarketplaceTF API Key.
   If left unset, this module will throw an error.
@@ -61,10 +53,6 @@ See test_local.js for more examples.
 
   Time to save a cached response in milliseconds.
   This is ignored if caching is disabled.
-
-- ### cache
-
-  This is an object containing the entire cache. This can be retrieved, changed, and then reapplied as needed.
 
 - ### debug
 
@@ -85,13 +73,16 @@ See test_local.js for more examples.
     }
     ```
 
+    Please note that Marketplace.TF does not have records on every Steam profile. It is likely they only have profiles on users that have ever signed into the website using their account.
+    When this happens, Marketplace.TF will not supply their status of either their reputation, nor seller. As a result, critical information is not returned to us. **This library assumes all profiles that do not have a "profile" on Marketplace.TF to be both not banned, and not a seller.**
+
 # Error Handling
 
 Any errors with the MarketplaceTF API or this module should resolve the promise with both an 'error' and 'error_message' value.
 
 ```js
 {
-	error: 'Status code. Typically "0"',
+	error: 'Status code. Typically "1"',
 	error_message: 'A more specific error message'
 }
 ```
