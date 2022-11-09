@@ -1,14 +1,11 @@
 require('dotenv').config();
-const marketplacetf = require('./index');
-
-marketplacetf.key = process.env.mptf;
-marketplacetf.debug = true;
+const marketplacetf = new (require('./index'))({ key: process.env.mptf, debug: true });
 
 async function test() {
 	// Initial request
 	const one = await marketplacetf.getProfile('76561197996869097');
-	if (!checkRequestErrors(one)) throw new Error('Failure');
 	console.log(one, '\n\n');
+	if (!checkRequestErrors(one)) throw new Error('Failure');
 
 	// Another user
 	const two = await marketplacetf.getProfile('76561197973492506');
