@@ -14,7 +14,7 @@ class MarketplaceTFAPI {
 	}
 
 	getProfile(steamid64) {
-		return new Promise(async (resolve, reject) => {
+		return new Promise(async (resolve) => {
 			// Check for the saved user data in the cache
 			this._debugLog({ data: 'Checking for user in cache' });
 			if (cache[steamid64]) {
@@ -29,7 +29,7 @@ class MarketplaceTFAPI {
 			// NOTE: When Marketplace.TF does not have a profile on a user, the 'results' will be blank.
 			// This is an expected result, and it should be treated as a non-banned value, and a non-seller value. We will set that in the next step "format".
 			this._debugLog({ data: 'Checking response for errors' });
-			if (!marketplacetf_response.response.success) return reject(this._newResponseError(raw.response.error, '1'));
+			if (!marketplacetf_response.response.success) return resolve(this._newResponseError(raw.response.error, '1'));
 
 			// TODO: Error checks here
 			// Format the response

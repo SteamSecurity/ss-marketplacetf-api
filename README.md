@@ -1,13 +1,14 @@
 <div align="center">
-  <img src="https://gitlab.com/steamsecurity/SS-MarketplaceTF-API/-/raw/master/images/marketplacetf-logo.png" width="750"><br>
+  <img src="https://raw.githubusercontent.com/SteamSecurity/ss-marketplacetf-api/master/images/marketplacetf-logo.png" width="750"><br>
   <b>A community made API Wrapper</b>
 </div>
 <br>
 <div align="center">
   <img src="https://img.shields.io/npm/dt/ss-marketplacetf-api?style=for-the-badge">
-  <img src="https://img.shields.io/gitlab/contributors/steamsecurity/ss-marketplacetf-api?style=for-the-badge">
-  <img src="https://img.shields.io/gitlab/issues/open-raw/steamsecurity/ss-marketplacetf-api?style=for-the-badge">
-  <img src="https://img.shields.io/gitlab/pipeline-status/steamsecurity/ss-marketplacetf-api?branch=master&style=for-the-badge">
+  <img src="https://img.shields.io/github/contributors/steamsecurity/ss-marketplacetf-api?style=for-the-badge">
+  <img src="https://img.shields.io/github/issues/steamsecurity/ss-marketplacetf-api?style=for-the-badge">
+  <img src="https://img.shields.io/github/languages/code-size/steamsecurity/ss-marketplacetf-api?style=for-the-badge">
+  <img src="https://img.shields.io/github/workflow/status/steamsecurity/ss-marketplacetf-api/NPM%20Publish?style=for-the-badge">
 </div>
 <br>
 
@@ -18,7 +19,7 @@ Please see [Limitations](#limitations) for further details.
 
 ### Installation
 
-`npm i SS-MarketplaceTF-API`
+`npm i ss-marketplacetf-api`
 
 # Basic usage
 
