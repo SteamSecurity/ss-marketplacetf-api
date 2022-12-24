@@ -1,6 +1,6 @@
 {
   "name": "ss-marketplacetf-api",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A Marketplace.TF api wrapper used and maintained by SteamSecurity.org",
   "main": "index.js",
   "scripts": {
@@ -28,6 +28,7 @@
     "axios": "^0.27.2"
   },
   "devDependencies": {
+    "console-table-printer": "^2.11.1",
     "dotenv": "^16.0.3"
   }
 }

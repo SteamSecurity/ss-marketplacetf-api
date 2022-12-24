@@ -4,8 +4,6 @@ let cache = {};
 
 class MarketplaceTFAPI {
 	constructor({ timeout = 5000, cache_time = 1800000, cache_results = true, key = null, debug = false } = {}) {
-		if (!key) throw new Error('A Marketplace.TF API key must be supplied to use ss-marketplacetf-api');
-
 		this.timeout = timeout;
 		this.cache_time = cache_time;
 		this.cache_results = cache_results;
@@ -15,6 +13,7 @@ class MarketplaceTFAPI {
 
 	getProfile(steamid64) {
 		return new Promise(async (resolve) => {
+			if (!this.key) return resolve(this._newErrorResponse('Marketplace.TF API key was not supplied. Request was not made.', '1'));
 			// Check for the saved user data in the cache
 			this._debugLog({ data: 'Checking for user in cache' });
 			if (cache[steamid64]) {
@@ -29,9 +28,8 @@ class MarketplaceTFAPI {
 			// NOTE: When Marketplace.TF does not have a profile on a user, the 'results' will be blank.
 			// This is an expected result, and it should be treated as a non-banned value, and a non-seller value. We will set that in the next step "format".
 			this._debugLog({ data: 'Checking response for errors' });
-			if (!marketplacetf_response.response.success) return resolve(this._newResponseError(raw.response.error, '1'));
+			if (!marketplacetf_response.response.success) return resolve(this._newErrorResponse(marketplacetf_response.response.error, '1'));
 
-			// TODO: Error checks here
 			// Format the response
 			this._debugLog({ data: 'Formatting the response' });
 			let profile_reputation = { banned: null, seller: null };
@@ -95,7 +93,7 @@ class MarketplaceTFAPI {
 		});
 	}
 
-	_newResponseError(message, error = '1') {
+	_newErrorResponse(message, error = '1') {
 		return {
 			error: error,
 			error_message: message,
