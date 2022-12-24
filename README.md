@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/github/contributors/steamsecurity/ss-marketplacetf-api?style=for-the-badge">
   <img src="https://img.shields.io/github/issues/steamsecurity/ss-marketplacetf-api?style=for-the-badge">
   <img src="https://img.shields.io/github/languages/code-size/steamsecurity/ss-marketplacetf-api?style=for-the-badge">
-  <img src="https://img.shields.io/github/workflow/status/steamsecurity/ss-marketplacetf-api/NPM%20Publish?style=for-the-badge">
+  <img src="https://img.shields.io/github/actions/workflow/status/steamsecurity/ss-marketplacetf-api/npm-publish.yml?style=for-the-badge">
 </div>
 <br>
 
@@ -59,6 +59,27 @@ See test.js for more examples.
 
   A Boolean controlling whether or not this module will run in debug mode. This is not recommended for production environments as it outputs a lot of text to the console window.
 
+The following code block is an example on how to set up ss-marketplacetf-api to have:
+
+- Marketplace.TF API Key
+- Request timeout of 2 seconds
+- Not cache results
+- A cache time of 0ms
+- Enable debugging mode
+
+```js
+const options = {
+	key: MARKETPLACETF_API_KEY,
+	timeout: 2000,
+	cache_results: false,
+	cache_time: 0,
+	debug: true,
+};
+
+const _marketplacetf_module = require('ss-marketplacetf-api');
+const marketplacetf = new _marketplacetf_module(options);
+```
+
 # Methods
 
 - ### getProfile(steamid64)
@@ -75,7 +96,9 @@ See test.js for more examples.
     ```
 
     Please note that Marketplace.TF does not have records on every Steam profile. It is likely they only have profiles on users that have ever signed into the website using their account.
-    When this happens, Marketplace.TF will not supply their status of either their reputation, nor seller. As a result, critical information is not returned to us. **This library assumes all profiles that do not have a "profile" on Marketplace.TF to be both not banned, and not a seller.**
+    When this happens, Marketplace.TF will not supply their status of either their reputation, nor seller. As a result, critical information is not returned to us.
+
+    **This library assumes all profiles that do not have a "profile" on Marketplace.TF to be both not banned, and not a seller.**
 
 # Error Handling
 

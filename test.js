@@ -1,38 +1,53 @@
 require('dotenv').config();
+const { printTable, Table } = require('console-table-printer');
 const marketplacetf = new (require('./index'))({ key: process.env.mptf, debug: true });
 
-async function test() {
-	// Initial request
-	const one = await marketplacetf.getProfile('76561197996869097');
-	console.log(one, '\n\n');
-	if (!checkRequestErrors(one)) throw new Error('Failure');
+// A sample list of Steamid64s to check this API against
+const sample_steamid64 = [
+	'76561197996869097', // Seller, not banned
+	'76561197973492506', // Not Seller, Not Banned
+	'76561198090658171', // Not Seller, Not Banned
+	'76561198092970200', // Not Seller, Banned
+	'765611980521164051', // This one is an invalid SteamID64, but don't tell our tester function about that!
+	'10101010101', // Same with this
+	'76561197968633696', // Seller, Not Banned
+	'76561198127443225', // Not Seller, Not Banned
+];
 
-	// Another user
-	const two = await marketplacetf.getProfile('76561197973492506');
-	if (!checkRequestErrors(two)) throw new Error('Failure');
-	console.log(two, '\n\n');
+let profile_table;
 
-	// A duplicate of the first request, check the cache!
-	const three = await marketplacetf.getProfile('76561197996869097');
-	if (!checkRequestErrors(three)) throw new Error('Failure');
-	console.log(three, '\n\n');
+async function testProfiles() {
+	// Build the table template to load data into
+	profile_table = new Table({
+		columns: [
+			{ name: 'status', title: 'Status', alignment: 'center' },
+			{ name: 'steamid64', title: 'SteamID64', alignment: 'center' },
+			{ name: 'seller', title: 'Is Seller?', alignment: 'center' },
+			{ name: 'banned', title: 'Is Banned?', alignment: 'center' },
+		],
+	});
 
-	// A duplicate of the second request, check the cache!
-	const four = await marketplacetf.getProfile('76561197973492506');
-	if (!checkRequestErrors(four)) throw new Error('Failure');
-	console.log(four, '\n\n');
-
-	// Marketplace.TF banned user
-	const five = await marketplacetf.getProfile('76561198092970200');
-	if (!checkRequestErrors(five)) throw new Error('Failure');
-	console.log(five, '\n\n');
+	for (steamid64 of sample_steamid64) {
+		await marketplacetf
+			.getProfile(steamid64)
+			.then((response) => addTableRow(profile_table, response))
+			.catch((reason) => addTableRow(profile_table, reason));
+	}
 }
 
-function checkRequestErrors(response) {
-	// Make sure our responses include banned, and seller.
-	// Also make sure they are set to either a true or false value.
-	if (response.banned !== true && response.banned !== false) return false;
-	if (response.seller !== true && response.seller !== false) return false;
-	return true;
+// A function to handle stylizing of the table row
+function addTableRow(table, response) {
+	// Defaults. Success!
+	let color = 'green';
+	let status = 'Good';
+
+	// If there is an error, change the status and the color
+	if (response.error_message) {
+		color = 'yellow';
+		status = 'Caught';
+	}
+
+	// Add the formatted row to the table
+	table.addRow({ ...response, status: status }, { color: color });
 }
-test();
+testProfiles().then(() => profile_table.printTable());
