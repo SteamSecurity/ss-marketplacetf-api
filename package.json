@@ -25,7 +25,7 @@
   },
   "homepage": "https://gitlab.com/steamsecurity/ss-marketplacetf-api#readme",
   "dependencies": {
-    "axios": "^0.27.2"
+    "axios": "^1.6.0"
   },
   "devDependencies": {
     "console-table-printer": "^2.11.1",
